@@ -16,6 +16,14 @@ cd PDB_data/
 bash update_db.sh
 ```
 
+mmseqs database of fasta files also needs to be updated
+
+```
+cd src/extra_properties/DB_PDB/
+mmseqs databases PDB ./DB_PDB tmp
+rm -rf tmp
+```
+
 # Add proteins to the database
 
 ```
@@ -34,7 +42,7 @@ Extra options:
 # Dependencies
 
 ```
-python3 -m pip install psycopg2-binary sqlalchemy pypka biopython
+python3 -m pip install psycopg2-binary sqlalchemy pypka biopython python-decouple
 ```
 
 [mmseqs](https://github.com/soedinglab/MMseqs2) and [DSSP](https://github.com/cmbi/dssp) are also required for running extra_properties/solvent_exposure.py

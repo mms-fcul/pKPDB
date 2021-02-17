@@ -23,7 +23,9 @@ def save_fasta(idcode: str, pid: int) -> None:
 
 def get_similar_idcodes(idcode: str, pid: int, seqid: float = 0.9) -> list:
     output_f = f"alnRes_{idcode}.m8"
-    cmd = f"mmseqs easy-search {idcode} ~/Download/mmseqs/bin/DB_PDB {output_f} tmp --min-seq-id {seqid} --max-seqs 1000000"
+    file_dir = os.path.dirname(os.path.abspath(__file__))
+    DB_FILE_PATH = file_dir + "/DB_PDB/DB_PDB"
+    cmd = f"mmseqs easy-search {idcode} {DB_FILE_PATH} {output_f} tmp --min-seq-id {seqid} --max-seqs 1000000"
     os.system(cmd)
 
     similar = []

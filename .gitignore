@@ -1,6 +1,7 @@
 # PKPDB specific
 tmp/
 src/old_scripts/
+src/extra_properties/DB_PDB/DB_PDB
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
