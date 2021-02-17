@@ -4,7 +4,8 @@ import os
 import sys
 import logging
 
-sys.path.insert(1, "../../")
+file_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(1, f"{file_dir}/../")
 from db import session, Protein, Fasta, Similarity
 from utils import download_fasta
 
@@ -22,8 +23,10 @@ def save_fasta(idcode: str, pid: int) -> None:
 
 
 def get_similar_idcodes(idcode: str, pid: int, seqid: float = 0.9) -> list:
+    if not os.path.isfile(idcode):
+        fasta_file = download_fasta(idcode, pid)
+
     output_f = f"alnRes_{idcode}.m8"
-    file_dir = os.path.dirname(os.path.abspath(__file__))
     DB_FILE_PATH = file_dir + "/DB_PDB/DB_PDB"
     cmd = f"mmseqs easy-search {idcode} {DB_FILE_PATH} {output_f} tmp --min-seq-id {seqid} --max-seqs 1000000"
     os.system(cmd)
@@ -63,4 +66,4 @@ if __name__ == "__main__":
     pid = session.query(Protein.pid).filter_by(idcode=idcode).first()[0]
 
     save_fasta(idcode, pid)
-    run_mmseqs(idcode, pid)
+    save_similar_idcodes(idcode, pid)

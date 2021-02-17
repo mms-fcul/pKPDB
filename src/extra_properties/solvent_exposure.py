@@ -6,7 +6,8 @@ from Bio.PDB.HSExposure import HSExposureCA, HSExposureCB, ExposureCN
 from Bio.PDB.ResidueDepth import ResidueDepth
 from Bio.PDB.DSSP import DSSP
 
-sys.path.insert(1, "../../")
+file_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(1, f"{file_dir}/../")
 from db import session, Protein, Residue, Residue_props, Pk
 from utils import get_pdb, get_sites
 
@@ -167,8 +168,11 @@ def calc_all_metrics(pid: int, idcode: str) -> None:
     for chain in chain_sites:
         for resnumb in chain_sites[chain]:
             _, resid = chain_sites[chain][resnumb]
-            new_res = Residue_props(resid=resid)
-            session.add(new_res)
+
+            new_res = session.query(Residue_props).filter_by(resid=resid).first()
+            if not new_res:
+                new_res = Residue_props(resid=resid)
+                session.add(new_res)
             chain_sites[chain][resnumb].append(new_res)
     session.flush()
 
