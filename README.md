@@ -2,6 +2,8 @@
 
 A database of theoretical pK values obtained with pypKa
 
+![DB diagram](./initial/diagram.png)
+
 # Create/Update Protein Data Bank proteins
 
 dbs/init.sql contains the schema of the database

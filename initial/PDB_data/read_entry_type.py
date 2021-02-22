@@ -22,3 +22,4 @@ VALUES ('{pdbcode}', '{p_type}') """
             DB.exec_statement(sql_query)
 
 DB.commit()
+print("Successfully updated PROTEIN: PROTEIN_TYPE")

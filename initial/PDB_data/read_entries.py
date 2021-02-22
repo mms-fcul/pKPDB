@@ -1,7 +1,7 @@
 import sys
 
 sys.path.insert(1, "../../src/")
-from pkpdb import PKPDB
+from db import PKPDB
 
 db = PKPDB()
 
@@ -56,3 +56,4 @@ VALUES ('{idcode}', '{acc_date}', {resolution}, '{experiment}') """
             db.exec_statement(sql_query)
 
 db.commit()
+print("Successfully updated PROTEIN: ACC_DATE, RESOLUTION, EXPERIMENT")
