@@ -25,6 +25,7 @@ CREATE TABLE contact_map(
     distances   FLOAT[][] NOT NULL,
     anumbs      INT[] NOT NULL,
     anames      VARCHAR(4)[] NOT NULL,
+    chains       CHAR(1)[] NOT NULL,
     resnumbs    INT[] NOT NULL,
     resnames    VARCHAR(4)[] NOT NULL,
     FOREIGN KEY (pid) REFERENCES Protein (pid),

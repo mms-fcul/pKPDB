@@ -97,6 +97,7 @@ class Contact_map(Base):
     distances = Column(Float, nullable=False)
     anumbs = Column(Integer, nullable=False)
     anames = Column(CHAR, nullable=False)
+    chains = Column(CHAR, nullable=False)
     resnumbs = Column(Integer, nullable=False)
     resnames = Column(CHAR, nullable=False)
     ForeignKeyConstraint(["pid"], ["protein.pid"])

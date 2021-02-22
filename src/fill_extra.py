@@ -6,26 +6,21 @@ from db import (
     Pk_sim,
 )  # , Protein, Pk_sim, PDB, Residue, Pk, Sim_settings
 from utils import idcodes_to_process
-from extra_properties import solvent_exposure, fasta
-
-# from prep_closest_res import run_prep_closest_res
-# from prep_hse import calc_extra_properties
-# from prep_seqalign import download_fasta, run_mmseqs
-# from prep_residues import run_around_seq
+from extra_properties import solvent_exposure, fasta, contact_map
 
 
 def run_all(pid: int, idcode: str) -> None:
 
-    # closest15_anames, closest15_dists
-    # run_prep_closest_res(pdbDB, idcode) # WARNING: MISSING THE MOST IMPORTANT PARAMETER
+    # contact_map
+    contact_map.save_contact_map(idcode, pid)
 
-    # hse, residue depth, solvent exposure, dssp...
+    # residue_props
     solvent_exposure.calc_all_metrics(pid, idcode)
 
-    # fasta_file
+    # fasta
     fasta.save_fasta(idcode, pid)
 
-    # cluster090
+    # similarity
     fasta.save_similar_idcodes(idcode, pid)
 
 
