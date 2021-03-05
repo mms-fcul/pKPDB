@@ -5,10 +5,37 @@ CREATE TABLE protein(
     PROTEIN_TYPE   TEXT,
     RESOLUTION     FLOAT,
     EXPERIMENT     TEXT,
+    EXP_PH         FLOAT,
+    EXP_TEMP       FLOAT,
     nres           INT,
     PRIMARY KEY (pid),
     UNIQUE (idcode)
 );
+
+CREATE TABLE sequence_align (
+    said SERIAL,
+    pid INT NOT NULL,
+    entity INT NOT NULL,
+    rcsb_id VARCHAR(10) NOT NULL,
+    chains       CHAR(1)[] NOT NULL,
+    uniprot_accession_codes VARCHAR(10)[] NOT NULL,
+    seq_align_beg  INT NOT NULL,
+    seq_align_end  INT,
+    FOREIGN KEY (pid) REFERENCES Protein (pid),
+    PRIMARY KEY (said)   
+); 
+
+CREATE TABLE structure_validation (
+    pid         INT,
+    rfree       FLOAT,
+    clashscore  FLOAT,
+    rama        FLOAT,
+    rota        FLOAT,
+    rsrz        FLOAT,
+    FOREIGN KEY (pid) REFERENCES Protein (pid),
+    PRIMARY KEY (pid)
+);
+
 
 CREATE TABLE PDB(
     pid         INT,
@@ -85,12 +112,14 @@ CREATE TABLE sim_settings (
 );
 
 CREATE TABLE pK_sim (
-    pksimid        SERIAL,
-    pid            INTEGER NOT NULL,
-    tit_curve      JSON,
-    sim_date       DATE,
-    sim_time       TIME,
-    settid         INT,
+    pksimid            SERIAL,
+    pid                INTEGER NOT NULL,
+    tit_curve          JSON,
+    isoelectric_point  FLOAT,
+    sim_date           DATE,
+    sim_time           TIME,
+    settid             INT,
+    error_description  TEXT,
     PRIMARY KEY (pksimid),
     FOREIGN KEY (pid) REFERENCES Protein (pid),
     FOREIGN KEY (settid) REFERENCES sim_settings (settid),

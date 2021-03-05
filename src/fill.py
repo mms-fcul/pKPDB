@@ -10,7 +10,7 @@ from typing import Tuple
 
 from db import session, Protein, Pk_sim, PDB, Residue, Pk, Sim_settings
 from utils import get_pdb, download_pdb, PK_MOD
-from pypka import pypka
+import pypka
 from pypka import __version__ as pypka_version
 
 from fill_extra import run_all
@@ -73,6 +73,9 @@ def run_pypka(fname: str, pdb_file_Hs: str) -> pypka.Titration:
         "save_pdb": pdb_file_Hs,
     }
     tit = pypka.Titration(parameters)
+
+    tit.getIsoelectricPoint()
+
     return tit
 
 
@@ -157,6 +160,13 @@ def save_titration_curve(tit):
     # Save total titration curve
     titration_curve = tit.getTitrationCurve()
     NEW_PK_SIM.tit_curve = titration_curve
+    session.commit()
+
+
+def save_isoelectric_point(tit):
+    # Save total titration curve
+    isoelectric_point = tit.getIsoelectricPoint()
+    NEW_PK_SIM.isoelectric_point = isoelectric_point
     session.commit()
 
 
@@ -252,6 +262,7 @@ def choose_protein() -> Tuple[int, str, Pk_sim, Protein]:
             .order_by(func.random())
             .first()
         )
+
         if next_sim:
             pid, idcode = next_sim
             NEW_PK_SIM = register_sim(pid)
@@ -266,6 +277,7 @@ def choose_protein() -> Tuple[int, str, Pk_sim, Protein]:
                 .order_by(func.random())
                 .first()
             )
+
             if next_sim:
                 pid, idcode = next_sim
                 NEW_PK_SIM = register_sim(pid)
@@ -287,6 +299,7 @@ def try_to_run_pypka(pid: int, idcode: str, fpdb_name: str) -> bool:
 
         save_pdbfile_hs(pdb_file_Hs)
         save_titration_curve(tit)
+        save_isoelectric_point(tit)
         save_settings(tit)
         tit = save_residues(tit, pid)
         save_pks(pid, tit)
@@ -301,6 +314,9 @@ def try_to_run_pypka(pid: int, idcode: str, fpdb_name: str) -> bool:
             error_message = f"{idcode}\n{e}\n"
             f.write(error_message)
             f.write(traceback.format_exc())
+        NEW_PK_SIM.error_description = str(e)
+        session.commit()
+        raise
 
     os.system(f"rm -f {idcode}*.pdb")
     return success_status
@@ -310,6 +326,10 @@ def fetch_pdb(pid: int, idcode: str) -> Tuple[int, PDB, str]:
     pdb_exists = session.query(PDB).filter_by(pid=pid).first()
     if not pdb_exists:
         fpdb_name = download_pdb(idcode)
+        if not fpdb_name:
+            NEW_PK_SIM.error_description = "Failed to download PDB of {}".format(idcode)
+            session.commit()
+            raise
         nres, CUR_PDB = save_pdb(pid, fpdb_name)
 
     else:

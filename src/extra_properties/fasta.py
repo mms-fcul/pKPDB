@@ -3,6 +3,7 @@
 import os
 import sys
 import logging
+import subprocess
 
 file_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(1, f"{file_dir}/../")
@@ -17,28 +18,47 @@ def save_fasta(idcode: str, pid: int) -> None:
         return
 
     fasta_file = download_fasta(idcode, pid)
-    new_fasta = Fasta(pid=pid, fasta_file=fasta_file)
-    session.add(new_fasta)
-    session.commit()
+    if fasta_file:
+        new_fasta = Fasta(pid=pid, fasta_file=fasta_file)
+        session.add(new_fasta)
+        session.commit()
 
 
 def get_similar_idcodes(idcode: str, pid: int, seqid: float = 0.9) -> list:
     if not os.path.isfile(idcode):
         fasta_file = download_fasta(idcode, pid)
+        if not fasta_file:
+            logging.error("Failed to dowload FASTA of {}".format(idcode))
 
-    output_f = f"alnRes_{idcode}.m8"
-    DB_FILE_PATH = file_dir + "/DB_PDB/DB_PDB"
-    cmd = f"mmseqs easy-search {idcode} {DB_FILE_PATH} {output_f} tmp --min-seq-id {seqid} --max-seqs 1000000"
-    os.system(cmd)
+    succeeded = False
+    try:
+        output_f = f"alnRes_{idcode}.m8"
+        DB_FILE_PATH = file_dir + "/DB_PDB/DB_PDB"
 
-    similar = []
-    with open(output_f) as f:
-        for line in f:
-            exc_idcode, _ = line.strip().split()[1].split("_")
-            if exc_idcode != idcode:
-                similar.append(exc_idcode)
+        cmd = f"mmseqs easy-search {idcode} {DB_FILE_PATH} {output_f} tmp --min-seq-id {seqid} --max-seqs 1000000"
+        subprocess.run(
+            cmd,
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        succeeded = True
+    except subprocess.CalledProcessError as e:
+        logging.warning(
+            f"mmseqs did not run successfully\tMessage: {e.stderr.decode('ascii')}"
+        )
 
-    os.system(f"rm {idcode} {output_f}")
+    similar = None
+    if succeeded:
+        similar = []
+        with open(output_f) as f:
+            for line in f:
+                exc_idcode, _ = line.strip().split()[1].split("_")
+                if exc_idcode != idcode:
+                    similar.append(exc_idcode)
+
+        os.system(f"rm -f {idcode} {output_f}")
 
     return similar
 
@@ -51,10 +71,10 @@ def save_similar_idcodes(idcode: str, pid: int, seqid: float = 0.9):
         return
 
     similar = get_similar_idcodes(idcode, pid, seqid=seqid)
-
-    new_cluster = Similarity(pid=pid, cluster=similar, seqid=seqid)
-    session.add(new_cluster)
-    session.commit()
+    if similar:
+        new_cluster = Similarity(pid=pid, cluster=similar, seqid=seqid)
+        session.add(new_cluster)
+        session.commit()
 
 
 if __name__ == "__main__":

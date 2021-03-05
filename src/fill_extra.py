@@ -6,7 +6,7 @@ from db import (
     Pk_sim,
 )  # , Protein, Pk_sim, PDB, Residue, Pk, Sim_settings
 from utils import idcodes_to_process
-from extra_properties import solvent_exposure, fasta, contact_map
+from extra_properties import solvent_exposure, fasta, contact_map, annotations
 
 
 def run_all(pid: int, idcode: str) -> None:
@@ -22,6 +22,11 @@ def run_all(pid: int, idcode: str) -> None:
 
     # similarity
     fasta.save_similar_idcodes(idcode, pid)
+
+    # annotations
+    annotations.save_experimental_conditions(idcode, pid)
+    annotations.save_sequence_info(idcode, pid)
+    annotations.save_structure_quality(idcode, pid)
 
 
 if __name__ == "__main__":

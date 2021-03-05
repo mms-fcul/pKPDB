@@ -29,7 +29,34 @@ class Protein(Base):
     protein_type = Column(Text)
     resolution = Column(Float)
     experiment = Column(Text)
+    exp_ph = Column(Float)
+    exp_temp = Column(Float)
     nres = Column(Integer)
+
+
+class SequenceAlign(Base):
+    __tablename__ = "sequence_align"
+    said = Column(Integer, primary_key=True)
+    pid = Column(Integer, nullable=False)
+    entity = Column(Integer, nullable=False)
+    rcsb_id = Column(VARCHAR, nullable=False)
+    uniprot_accession_codes = Column(VARCHAR, nullable=False)
+    chains = Column(CHAR, nullable=False)
+    seq_align_beg = Column(Integer, nullable=False)
+    seq_align_end = Column(Integer)
+    ForeignKeyConstraint(["pid"], ["protein.pid"])
+
+
+class StructureValidation(Base):
+    __tablename__ = "structure_validation"
+
+    pid = Column(Integer, primary_key=True)
+    rfree = Column(Float)
+    clashscore = Column(Float)
+    rama = Column(Float)
+    rota = Column(Float)
+    rsrz = Column(Float)
+    ForeignKeyConstraint(["pid"], ["protein.pid"])
 
 
 class PDB(Base):
@@ -47,9 +74,11 @@ class Pk_sim(Base):
     pksimid = Column(Integer, primary_key=True)
     pid = Column(Integer, unique=True, nullable=False)
     tit_curve = Column(JSON)
+    isoelectric_point = Column(Float)
     sim_date = Column(Date)
     sim_time = Column(Time)
     settid = Column(Integer)
+    error_description = Column(Text)
     ForeignKeyConstraint(["pid", "settid"], ["protein.pid", "sim_settings.settid"])
 
 

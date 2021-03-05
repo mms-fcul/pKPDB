@@ -1,6 +1,8 @@
 from db import session, Protein, PDB, Residue, Pk
 import os
 from typing import Generator, Tuple
+import subprocess
+import logging
 
 PK_MOD = {
     "ASP": 3.79,
@@ -15,14 +17,23 @@ PK_MOD = {
 
 
 def download_pdb(pdb_idcode: str) -> str:
-    # Get the pdb file from PDB
-    cmd = (
-        f"wget https://files.rcsb.org/download/{pdb_idcode}.pdb.gz;"
-        f"gunzip -f {pdb_idcode}.pdb.gz"
-    )
-    os.system(cmd)
+    fname = None
+    try:
+        cmd = (
+            f"wget https://files.rcsb.org/download/{pdb_idcode}.pdb.gz;"
+            f"gunzip -f {pdb_idcode}.pdb.gz"
+        )
+        subprocess.run(
+            cmd,
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        fname = f"{pdb_idcode}.pdb"
+    except subprocess.CalledProcessError as e:
+        logging.warning(f"{idcode} PDB download failed!")
 
-    fname = f"{pdb_idcode}.pdb"
     return fname
 
 
@@ -38,14 +49,46 @@ def get_pdb(pid: int, idcode: str, prefix="") -> Tuple[int, PDB, str]:
 
 
 def download_fasta(idcode: str, pid: int) -> str:
-    # Get the pdb file from PDB
-    cmd = f"wget https://www.rcsb.org/fasta/entry/{idcode}"
-    os.system(cmd)
+    try:
+        cmd = f"wget https://www.rcsb.org/fasta/entry/{idcode}"
+        subprocess.run(
+            cmd,
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    except subprocess.CalledProcessError as e:
+        logging.warning(f"{idcode} FASTA download failed!")
 
-    with open(f"{idcode}") as f:
-        fasta_file = f.read()
+    fasta_file = None
+    if os.path.isfile(f"{idcode}"):
+        with open(f"{idcode}") as f:
+            fasta_file = f.read()
 
     return fasta_file
+
+
+def download_cif(idcode: str, pid: int) -> str:
+    if not os.path.isfile(f"{idcode}.cif"):
+        try:
+            cmd = f"wget https://files.rcsb.org/header/{idcode}.cif"
+            subprocess.run(
+                cmd,
+                shell=True,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        except subprocess.CalledProcessError as e:
+            logging.warning(f"{idcode} CIF download failed!")
+
+    cif_file = None
+    if os.path.isfile(f"{idcode}.cif"):
+        with open(f"{idcode}.cif") as f:
+            cif_file = f.read()
+
+    return cif_file
 
 
 def idcodes_to_process(fname) -> Generator:
