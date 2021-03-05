@@ -3,10 +3,10 @@ CREATE TABLE protein(
     IDCODE         CHAR(4),
     ACC_DATE       DATE,
     PROTEIN_TYPE   TEXT,
-    RESOLUTION     FLOAT,
+    RESOLUTION     REAL,
     EXPERIMENT     TEXT,
-    EXP_PH         FLOAT,
-    EXP_TEMP       FLOAT,
+    EXP_PH         REAL,
+    EXP_TEMP       REAL,
     nres           INT,
     PRIMARY KEY (pid),
     UNIQUE (idcode)
@@ -27,11 +27,11 @@ CREATE TABLE sequence_align (
 
 CREATE TABLE structure_validation (
     pid         INT,
-    rfree       FLOAT,
-    clashscore  FLOAT,
-    rama        FLOAT,
-    rota        FLOAT,
-    rsrz        FLOAT,
+    rfree       REAL,
+    clashscore  REAL,
+    rama        REAL,
+    rota        REAL,
+    rsrz        REAL,
     FOREIGN KEY (pid) REFERENCES Protein (pid),
     PRIMARY KEY (pid)
 );
@@ -49,7 +49,7 @@ CREATE TABLE PDB(
 
 CREATE TABLE contact_map(
     pid         INT,
-    distances   FLOAT[][] NOT NULL,
+    distances   REAL[][] NOT NULL,
     anumbs      INT[] NOT NULL,
     anames      VARCHAR(4)[] NOT NULL,
     chains       CHAR(1)[] NOT NULL,
@@ -69,7 +69,7 @@ CREATE TABLE FASTA(
 CREATE TABLE similarity(
     pid         INT,
     cluster     CHAR(4)[] NOT NULL,
-    seqid       FLOAT NOT NULL,    
+    seqid       REAL NOT NULL,    
     FOREIGN KEY (pid) REFERENCES Protein (pid),
     PRIMARY KEY (pid)    
 );
@@ -87,18 +87,18 @@ CREATE TABLE residue(
 
 CREATE TABLE residue_props (
     resid INT,
-    hseCA_u FLOAT,
-    hseCA_d FLOAT,
-    hseCA_angle FLOAT,
-    hseCB_u FLOAT,
-    hseCB_d FLOAT,
-    hseCN FLOAT,
-    residue_depth FLOAT,
-    ca_depth FLOAT,
+    hseCA_u REAL,
+    hseCA_d REAL,
+    hseCA_angle REAL,
+    hseCB_u REAL,
+    hseCB_d REAL,
+    hseCN REAL,
+    residue_depth REAL,
+    ca_depth REAL,
     sec_struct CHAR(1),
-    sasa_r FLOAT,
-    phi FLOAT,
-    psi FLOAT,
+    sasa_r REAL,
+    phi REAL,
+    psi REAL,
     FOREIGN KEY (resid) REFERENCES Residue (resid),
     PRIMARY KEY (resid)
 );
@@ -115,7 +115,8 @@ CREATE TABLE pK_sim (
     pksimid            SERIAL,
     pid                INTEGER NOT NULL,
     tit_curve          JSON,
-    isoelectric_point  FLOAT,
+    isoelectric_point  REAL,
+    isoelectric_point_limit  CHAR(1),
     sim_date           DATE,
     sim_time           TIME,
     settid             INT,
@@ -130,10 +131,10 @@ CREATE TABLE pK (
     pkid           SERIAL,
     resid          INTEGER NOT NULL,
     pksimid        INTEGER NOT NULL,
-    pK             FLOAT,
-    dpK            FLOAT,
-    pK_exp         FLOAT,
-    pK_propka      FLOAT,
+    pK             REAL,
+    dpK            REAL,
+    pK_exp         REAL,
+    pK_propka      REAL,
     tautomers      CHAR(3)[] NOT NULL,
     tautomer_probs JSON NOT NULL,
     tit_curve      JSON NOT NULL,

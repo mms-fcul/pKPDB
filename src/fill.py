@@ -20,6 +20,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--ncpus", default=8, type=int)
 parser.add_argument("--idcode", type=str)
 parser.add_argument("--nres-limit", default=500, type=int)
+parser.add_argument("--no-post-processing", default=False, action="store_true")
 parser.add_argument(
     "--verbose", default="INFO", type=str, choices=["DEBUG", "INFO", "WARNING"]
 )
@@ -73,8 +74,6 @@ def run_pypka(fname: str, pdb_file_Hs: str) -> pypka.Titration:
         "save_pdb": pdb_file_Hs,
     }
     tit = pypka.Titration(parameters)
-
-    tit.getIsoelectricPoint()
 
     return tit
 
@@ -166,6 +165,11 @@ def save_titration_curve(tit):
 def save_isoelectric_point(tit):
     # Save total titration curve
     isoelectric_point = tit.getIsoelectricPoint()
+    if type(isoelectric_point) == tuple:
+        pH, limit, charge = isoelectric_point
+        isoelectric_point = pH
+        NEW_PK_SIM.isoelectric_point_limit = limit
+
     NEW_PK_SIM.isoelectric_point = isoelectric_point
     session.commit()
 
@@ -232,7 +236,7 @@ def save_pks(pid: int, tit: pypka.Titration) -> None:
 
 
 def choose_protein() -> Tuple[int, str, Pk_sim, Protein]:
-    def register_sim(pid: int) -> Pk_sim:
+    def register_sim(pid: int, force=False) -> Pk_sim:
         try:
             new_sim = Pk_sim(
                 pid=pid, sim_date=func.current_date(), sim_time=func.current_time()
@@ -240,15 +244,33 @@ def choose_protein() -> Tuple[int, str, Pk_sim, Protein]:
             session.add(new_sim)
             session.commit()
         except:
-            logging.error("The protein has already been calculated")
-            exit()
+            if force:
+                session.rollback()
+
+                del_pksimid = session.query(Pk_sim.pksimid).filter(Pk_sim.pid == pid)
+                to_del = session.query(Pk).filter(Pk.pksimid == del_pksimid)
+                to_del.delete(synchronize_session=False)
+
+                to_del = session.query(Pk_sim).filter(Pk_sim.pid == pid)
+                to_del.delete(synchronize_session=False)
+
+                session.commit()
+
+                new_sim = Pk_sim(
+                    pid=pid, sim_date=func.current_date(), sim_time=func.current_time()
+                )
+                session.add(new_sim)
+                session.commit()
+            else:
+                logging.error("The protein has already been calculated")
+                exit()
         return new_sim
 
     if args.idcode:
         # Use input idcode
         idcode = args.idcode
-        pid = session.query(Protein.pid).filter_by(idcode=idcode).first()
-        NEW_PK_SIM = register_sim(pid)
+        pid = session.query(Protein.pid).filter_by(idcode=idcode).first()[0]
+        NEW_PK_SIM = register_sim(pid, force=True)
 
     else:
         # Get a protein that with no previous pka prediction
@@ -345,7 +367,7 @@ if __name__ == "__main__":
 
     nres, CUR_PDB, fpdb_name = fetch_pdb(pid, idcode)
 
-    if nres > args.nres_limit or args.idcode:
+    if nres > args.nres_limit and not args.idcode:
         logging.info(
             f"Protein {idcode} has {nres}. nres-limit is set to {args.nres_limit}"
         )
@@ -354,6 +376,6 @@ if __name__ == "__main__":
 
     success_status = try_to_run_pypka(pid, idcode, fpdb_name)
 
-    if success_status:
+    if success_status and not args.no_post_processing:
         run_all(pid, idcode)  # run_post_processing(pid, idcode, pdbDB)
         logging.info(f"Post-processing of {idcode} succeeded!")

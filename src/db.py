@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, ForeignKeyConstraint, UniqueConstraint
-from sqlalchemy import Column, Integer, Float, Date, CHAR, JSON, Time, Text, VARCHAR
+from sqlalchemy import Column, Integer, Date, CHAR, JSON, Time, Text, VARCHAR, REAL
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import psycopg2
@@ -27,10 +27,10 @@ class Protein(Base):
     idcode = Column(CHAR, unique=True)
     acc_date = Column(Date)
     protein_type = Column(Text)
-    resolution = Column(Float)
+    resolution = Column(REAL)
     experiment = Column(Text)
-    exp_ph = Column(Float)
-    exp_temp = Column(Float)
+    exp_ph = Column(REAL)
+    exp_temp = Column(REAL)
     nres = Column(Integer)
 
 
@@ -51,11 +51,11 @@ class StructureValidation(Base):
     __tablename__ = "structure_validation"
 
     pid = Column(Integer, primary_key=True)
-    rfree = Column(Float)
-    clashscore = Column(Float)
-    rama = Column(Float)
-    rota = Column(Float)
-    rsrz = Column(Float)
+    rfree = Column(REAL)
+    clashscore = Column(REAL)
+    rama = Column(REAL)
+    rota = Column(REAL)
+    rsrz = Column(REAL)
     ForeignKeyConstraint(["pid"], ["protein.pid"])
 
 
@@ -74,7 +74,8 @@ class Pk_sim(Base):
     pksimid = Column(Integer, primary_key=True)
     pid = Column(Integer, unique=True, nullable=False)
     tit_curve = Column(JSON)
-    isoelectric_point = Column(Float)
+    isoelectric_point = Column(REAL)
+    isoelectric_point_limit = Column(CHAR)
     sim_date = Column(Date)
     sim_time = Column(Time)
     settid = Column(Integer)
@@ -100,9 +101,9 @@ class Pk(Base):
     pkid = Column(Integer, primary_key=True)
     resid = Column(Integer, nullable=False)
     pksimid = Column(Integer, nullable=False)
-    pk = Column(Float)
-    dpk = Column(Float)
-    pk_propka = Column(Float)
+    pk = Column(REAL)
+    dpk = Column(REAL)
+    pk_propka = Column(REAL)
     tautomers = Column(CHAR, nullable=False)
     tautomer_probs = Column(JSON, nullable=False)
     tit_curve = Column(JSON, nullable=False)
@@ -123,7 +124,7 @@ class Contact_map(Base):
     __tablename__ = "contact_map"
 
     pid = Column(Integer, primary_key=True)
-    distances = Column(Float, nullable=False)
+    distances = Column(REAL, nullable=False)
     anumbs = Column(Integer, nullable=False)
     anames = Column(CHAR, nullable=False)
     chains = Column(CHAR, nullable=False)
@@ -136,18 +137,18 @@ class Residue_props(Base):
     __tablename__ = "residue_props"
 
     resid = Column(Integer, primary_key=True)
-    hseca_u = Column(Float)
-    hseca_d = Column(Float)
-    hseca_angle = Column(Float)
-    hsecb_u = Column(Float)
-    hsecb_d = Column(Float)
-    hsecn = Column(Float)
-    residue_depth = Column(Float)
-    ca_depth = Column(Float)
+    hseca_u = Column(REAL)
+    hseca_d = Column(REAL)
+    hseca_angle = Column(REAL)
+    hsecb_u = Column(REAL)
+    hsecb_d = Column(REAL)
+    hsecn = Column(REAL)
+    residue_depth = Column(REAL)
+    ca_depth = Column(REAL)
     sec_struct = Column(CHAR)
-    sasa_r = Column(Float)
-    phi = Column(Float)
-    psi = Column(Float)
+    sasa_r = Column(REAL)
+    phi = Column(REAL)
+    psi = Column(REAL)
     ForeignKeyConstraint(["resid"], ["residue.resid"])
 
 
@@ -164,7 +165,7 @@ class Similarity(Base):
 
     pid = Column(Integer, primary_key=True)
     cluster = Column(CHAR, nullable=False)
-    seqid = Column(Float, nullable=False)
+    seqid = Column(REAL, nullable=False)
     ForeignKeyConstraint(["pid"], ["protein.pid"])
 
 

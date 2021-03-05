@@ -55,7 +55,7 @@ def save_experimental_conditions(idcode, pid):
         elif line.startswith("_exptl_crystal_grow.temp"):
             tmp_temp = handle_cif_line(line, float)
             if tmp_temp:
-                temp = tmp_temp
+                temperature = tmp_temp
         elif line.startswith("_em_buffer.pH"):
             tmp_ph = handle_cif_line(line, float)
             if tmp_ph:
@@ -63,7 +63,7 @@ def save_experimental_conditions(idcode, pid):
         elif line.startswith("_pdbx_nmr_exptl_sample_conditions.temperature"):
             tmp_temp = handle_cif_line(line, float)
             if tmp_temp:
-                temp = tmp_temp
+                temperature = tmp_temp
         elif line.startswith("_em_buffer.pH"):
             tmp_ph = handle_cif_line(line, float)
             if tmp_ph:
@@ -74,7 +74,7 @@ def save_experimental_conditions(idcode, pid):
         if ph:
             protein.exp_ph = ph
         if temperature:
-            protein.exp_temp = temp
+            protein.exp_temp = temperature
         session.commit()
 
 
