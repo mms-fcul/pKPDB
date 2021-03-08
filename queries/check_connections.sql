@@ -1,0 +1,1 @@
+SELECT sum(numbackends) as nconnections FROM pg_stat_database;
