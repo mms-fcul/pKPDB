@@ -1,5 +1,6 @@
-.PHONY: check-space help
+.PHONY: check-space help csv-exports
 .DEFAULT_GOAL := help
+SHELL := /bin/bash
 
 define PRINT_HELP_PYSCRIPT
 import re, sys
@@ -11,6 +12,11 @@ for line in sys.stdin:
 		print("%-20s %s" % (target, help))
 endef
 export PRINT_HELP_PYSCRIPT
+
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
 
 help:  ## get help
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
@@ -25,5 +31,20 @@ status: ## check the insertion progress
 	psql -d pkpdb -f queries/check_insertion_status.sql
 
 connections: ## check the number of active connections
-	psql -d pkpdb -f queries/check_connections.sql 
+	psql -d pkpdb -f queries/check_connections.sql
+
+csv-exports: ## export csv files of similarity, pIs and pKas
+	psql -d pkpdb -f queries/export_similarity.sql
+	psql -d pkpdb -f queries/export_pis.sql
+	psql -d pkpdb -f queries/export_pks.sql
+	
+	rm -f ${static_folder}/{similarity090,isoelectric,pkas}.csv*	
+	cp /tmp/similarity090.csv ${static_folder}
+	cp /tmp/isoelectric.csv ${static_folder}
+	cp /tmp/pkas.csv ${static_folder}
+
+	gzip -9 ${static_folder}/similarity090.csv
+	gzip -9 ${static_folder}/isoelectric.csv
+	gzip -9 ${static_folder}/pkas.csv
+
 

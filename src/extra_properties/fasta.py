@@ -78,12 +78,18 @@ def save_similar_idcodes(idcode: str, pid: int, seqid: float = 0.9):
 
 
 if __name__ == "__main__":
-    # for idcode in idcodes_to_process("urgent_idcodes"):
+    subquery = session.query(Similarity.pid)
+    missing = (
+        session.query(Protein.pid, Protein.idcode)
+        .filter(Protein.pid.notin_(subquery))
+        .limit(1000)
+        .all()
+    )
 
-    idcode = sys.argv[1]
-    print("############", idcode, "############")
+    for pid, idcode in missing:
+        # idcode = sys.argv[1]
+        print("############", idcode, pid, "############")
+        # pid = session.query(Protein.pid).filter_by(idcode=idcode).first()[0]
 
-    pid = session.query(Protein.pid).filter_by(idcode=idcode).first()[0]
-
-    save_fasta(idcode, pid)
-    save_similar_idcodes(idcode, pid)
+        save_fasta(idcode, pid)
+        save_similar_idcodes(idcode, pid)

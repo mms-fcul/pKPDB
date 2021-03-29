@@ -3,15 +3,19 @@ from sqlalchemy import Column, Integer, Date, CHAR, JSON, Time, Text, VARCHAR, R
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import psycopg2
-from decouple import config
+from dotenv import dotenv_values
+import os
 
-user = config("user")
-password = config("password")
-ip = config("ip")
-port = config("port")
-database = config("database")
+dir_path = os.path.dirname(os.path.realpath(__file__))
+config = dotenv_values(f"{dir_path}/../.env")
 
-db_path = f"postgres://{user}:{password}@{ip}:{port}/{database}"
+user = config["user"]
+password = config["password"]
+ip = config["ip"]
+port = config["port"]
+database = config["database"]
+
+db_path = f"postgresql://{user}:{password}@{ip}:{port}/{database}"
 
 db = create_engine(db_path)
 Base = declarative_base()
