@@ -7,7 +7,7 @@ import subprocess
 
 file_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(1, f"{file_dir}/../")
-from db import session, Protein, Fasta, Similarity
+from db import session, Protein, Fasta, Similarity, Pk_sim
 from utils import download_fasta
 
 
@@ -78,11 +78,12 @@ def save_similar_idcodes(idcode: str, pid: int, seqid: float = 0.9):
 
 
 if __name__ == "__main__":
-    subquery = session.query(Similarity.pid)
+    subquery1 = session.query(Similarity.pid)
+    subquery2 = session.query(Pk_sim.pid).filter(Pk_sim.tit_curve != None)
     missing = (
         session.query(Protein.pid, Protein.idcode)
-        .filter(Protein.pid.notin_(subquery))
-        .limit(1000)
+        .filter(Protein.pid.notin_(subquery1))
+        .filter(Protein.pid.in_(subquery2))
         .all()
     )
 

@@ -99,6 +99,19 @@ class Residue(Base):
     UniqueConstraint("pid", "residue_number", "residue_type", "chain")
 
 
+class Exp_pk(Base):
+    __tablename__ = "exp_pk"
+
+    expid = Column(Integer, primary_key=True)
+    resid = Column(Integer, nullable=False)
+    pka = Column(REAL, nullable=False)
+    uncertainty = Column(REAL)
+    exp_method = Column(Text)
+    temp = Column(REAL)
+    reference = Column(Text)
+    ForeignKeyConstraint(["resid"], ["residue.resid"])
+
+
 class Pk(Base):
     __tablename__ = "pk"
 
@@ -107,7 +120,6 @@ class Pk(Base):
     pksimid = Column(Integer, nullable=False)
     pk = Column(REAL)
     dpk = Column(REAL)
-    pk_propka = Column(REAL)
     tautomers = Column(CHAR, nullable=False)
     tautomer_probs = Column(JSON, nullable=False)
     tit_curve = Column(JSON, nullable=False)
@@ -167,7 +179,8 @@ class Fasta(Base):
 class Similarity(Base):
     __tablename__ = "similarity"
 
-    pid = Column(Integer, primary_key=True)
+    similid = Column(Integer, primary_key=True)
+    pid = Column(Integer)
     cluster = Column(CHAR, nullable=False)
     seqid = Column(REAL, nullable=False)
     ForeignKeyConstraint(["pid"], ["protein.pid"])

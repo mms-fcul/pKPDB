@@ -67,11 +67,12 @@ CREATE TABLE FASTA(
 );
 
 CREATE TABLE similarity(
+    similid     SERIAL,
     pid         INT,
     cluster     CHAR(4)[] NOT NULL,
     seqid       REAL NOT NULL,    
     FOREIGN KEY (pid) REFERENCES Protein (pid),
-    PRIMARY KEY (pid)    
+    PRIMARY KEY (similid)    
 );
 
 CREATE TABLE residue(
@@ -83,6 +84,18 @@ CREATE TABLE residue(
     PRIMARY KEY (resid),
     FOREIGN KEY (pid) REFERENCES Protein (pid),
     UNIQUE (pid, residue_number, residue_type, chain)    
+);
+
+CREATE TABLE exp_pk(
+    expid SERIAL,
+    resid INT NOT NULL,
+    pka REAL NOT NULL,
+    uncertainty REAL,
+    exp_method TEXT,
+    temp REAL,
+    reference TEXT,
+    FOREIGN KEY (resid) REFERENCES Residue (resid),
+    PRIMARY KEY (expid)
 );
 
 CREATE TABLE residue_props (
@@ -133,8 +146,6 @@ CREATE TABLE pK (
     pksimid        INTEGER NOT NULL,
     pK             REAL,
     dpK            REAL,
-    pK_exp         REAL,
-    pK_propka      REAL,
     tautomers      CHAR(3)[] NOT NULL,
     tautomer_probs JSON NOT NULL,
     tit_curve      JSON NOT NULL,
@@ -142,4 +153,10 @@ CREATE TABLE pK (
     FOREIGN KEY (resid) REFERENCES Residue (resid),
     FOREIGN KEY (pksimid) REFERENCES pK_sim (pksimid),
     UNIQUE (resid, pksimid)
+);
+
+CREATE INDEX pk_dpks_index ON pk (resid, pksimid, pk, dpk);
+ALTER TABLE pk SET (
+   autovacuum_analyze_scale_factor = 0,
+   autovacuum_analyze_threshold = 500000
 );

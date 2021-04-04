@@ -9,7 +9,7 @@ from
     (select count(*) as a from protein where nres is not null and protein_type = 'prot') as downloaded,
     (select count(*) as total from protein where protein_type = 'prot') as total,
     (select count(settid) as a from pk_sim) as inserted,
-    (select count(error_description) as a from pk_sim) as failed,    
+    (select count(error_description) as a from pk_sim) as failed,
     (select sum(numbackends) as a from pg_stat_database) as running
 ;
 
