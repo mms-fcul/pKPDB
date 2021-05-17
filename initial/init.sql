@@ -47,17 +47,20 @@ CREATE TABLE PDB(
 
 /* include titratable Hs*/
 
+/* 532G JSON -> XXXG REAL[]
+*/
 CREATE TABLE contact_map(
     pid         INT,
-    distances   REAL[][] NOT NULL,
+    distances   REAL[] NOT NULL,
     anumbs      INT[] NOT NULL,
     anames      VARCHAR(4)[] NOT NULL,
-    chains       CHAR(1)[] NOT NULL,
+    chains      CHAR(1)[] NOT NULL,
     resnumbs    INT[] NOT NULL,
     resnames    VARCHAR(4)[] NOT NULL,
     FOREIGN KEY (pid) REFERENCES Protein (pid),
     PRIMARY KEY (pid)
 );
+
 
 CREATE TABLE FASTA(
     pid         INT,
@@ -157,6 +160,6 @@ CREATE TABLE pK (
 
 CREATE INDEX pk_dpks_index ON pk (resid, pksimid, pk, dpk);
 ALTER TABLE pk SET (
-   autovacuum_analyze_scale_factor = 0,
-   autovacuum_analyze_threshold = 500000
+   autovacuum_analyze_scale_factor = 0.02,
+   autovacuum_vacuum_scale_factor = 0.01
 );

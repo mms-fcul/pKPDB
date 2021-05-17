@@ -1,13 +1,17 @@
 import os
 import sys
 import pandas as pd
+import numpy as np
 from scipy.spatial.distance import pdist, squareform
 from typing import Tuple, Dict, List, Any, Optional
+import logging
 
 file_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(1, f"{file_dir}/../")
-from db import session, Protein, PDB, Contact_map
+from db import session, Protein, PDB, Contact_map, db, PKPDB
 from utils import get_sites, get_pdb
+
+pkpdb = PKPDB()
 
 titratable_hs = {
     "NT3": ("H1", "H2", "H3"),
@@ -88,7 +92,7 @@ def clean_pdb_atoms(pid: int) -> list:
 def calc_dists(short_pdb: list, pid: int) -> None:
 
     df = pd.DataFrame(
-        short_pdb[:5],
+        short_pdb,
         columns=["aname", "anumb", "resname", "chain", "resnumb", "x", "y", "z"],
     )
 
@@ -97,35 +101,40 @@ def calc_dists(short_pdb: list, pid: int) -> None:
     return df, dists
 
 
-aa_atoms = {
-    "ASP": ["OD1", "OD2"],
-    "CTR": ["OD1", "OXT"],
-    "CYS": ["SG"],
-    "GLU": ["OE1", "OE2"],
-    "HIS": ["ND1", "NE2"],
-    "LYS": ["NZ"],
-    "NTR": ["N"],
-    "TYR": ["OH"],
-}
-
-
 def save_contact_map(idcode: str, pid: int) -> None:
+    cm_exists = session.query(Contact_map.pid).filter_by(pid=pid).first()
+    if cm_exists:
+        logging.warning(f"The contact map of {idcode} already exists!")
+        return
 
     short_pdb = clean_pdb_atoms(pid)
 
     df, dists = calc_dists(short_pdb, pid)
 
-    new_cm = Contact_map(
-        pid=pid,
-        distances=dists.tolist(),
-        anumbs=df.anumb.values.tolist(),
-        anames=df.aname.values.tolist(),
-        chains=df.chain.values.tolist(),
-        resnumbs=df.resnumb.values.tolist(),
-        resnames=df.resname.values.tolist(),
-    )  #        chains = df.chain.values,
-    session.add(new_cm)
-    session.commit()
+    sql_query = f"""
+INSERT INTO contact_map(PID, DISTANCES, ANUMBS, ANAMES, CHAINS, RESNUMBS, RESNAMES)
+VALUES ({pid}, '{str(np.round(dists, 4).tolist()).replace('[', '{').replace(']', '}')}', ARRAY{df.anumb.values.tolist()}, ARRAY{df.aname.values.tolist()}, ARRAY{df.chain.values.tolist()}, ARRAY{df.resnumb.values.tolist()}, ARRAY{df.resname.values.tolist()}) """
+    pkpdb.exec_statement(sql_query)
+    pkpdb.commit()
+    pkpdb.reconnect()
+
+    # sql_query = f"""
+    # UPDATE contact_map SET DISTANCES = DISTANCES || '{str(np.round(dists, 4).tolist()[8000000:]).replace('[', '{').replace(']', '}')}' WHERE PID = {pid}
+    # """
+    # pkpdb.exec_statement(sql_query)
+    # pkpdb.commit()
+    # pkpdb.reconnect()
+    # new_cm = Contact_map(
+    #    pid=pid,
+    #    distances=str(np.round(dists, 4).tolist()),
+    #    anumbs=,
+    #    anames=,
+    #    chains=,
+    #    resnumbs=,
+    #    resnames=,
+    # )
+    # session.add(new_cm)
+    # session.commit()
 
 
 if __name__ == "__main__":

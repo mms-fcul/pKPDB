@@ -1,5 +1,16 @@
 from sqlalchemy import create_engine, ForeignKeyConstraint, UniqueConstraint
-from sqlalchemy import Column, Integer, Date, CHAR, JSON, Time, Text, VARCHAR, REAL
+from sqlalchemy import (
+    Column,
+    Integer,
+    Date,
+    CHAR,
+    JSON,
+    Time,
+    Text,
+    VARCHAR,
+    REAL,
+    ARRAY,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import psycopg2
@@ -140,7 +151,7 @@ class Contact_map(Base):
     __tablename__ = "contact_map"
 
     pid = Column(Integer, primary_key=True)
-    distances = Column(REAL, nullable=False)
+    distances = Column(JSON, nullable=False)
     anumbs = Column(Integer, nullable=False)
     anames = Column(CHAR, nullable=False)
     chains = Column(CHAR, nullable=False)
@@ -206,13 +217,33 @@ class PKPDB:
         self.pid = None
         self.pksim_id = None
 
+        self.conn_details = {
+            "user": user,
+            "password": password,
+            "host": host,
+            "database": database,
+            "port": port,
+        }
+        self.connect()
+
+    def connect(self):
         self.connection = psycopg2.connect(
-            user=user, password=password, host=host, database=database, port=port
+            user=self.conn_details["user"],
+            password=self.conn_details["password"],
+            host=self.conn_details["host"],
+            database=self.conn_details["database"],
+            port=self.conn_details["port"],
         )
         self.cursor = self.connection.cursor()
 
     def close_db(self):
         self.connection.close()
+        self.connection = None
+        self.cursor = None
+
+    def reconnect(self):
+        self.close_db()
+        self.connect()
 
     def exec_statement(self, statement, commit=False, fetchall=False):
         self.cursor.execute(statement)
