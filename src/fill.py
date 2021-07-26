@@ -51,6 +51,8 @@ def save_pdb(pid: int, fname: str) -> Tuple[float, PDB]:
                     nres += 1
                 previous_res = resi
                 content += line
+            if line.startswith("ENDMDL"):
+                break
 
     new_pdb = PDB(pid=pid, pdb_file=content)
     session.add(new_pdb)

@@ -1,6 +1,20 @@
 # PKPDB
 
-A database of theoretical pK values obtained with pypKa
+A database of over 12M theoretical pKa values calculated over 120k protein structures deposited in the Protein Data Bank. DOI: <a href="https://doi.org/10.1093/bioinformatics/btab518">10.1093/bioinformatics/btab518</a>
+
+While this repo contains all the necessary code to replicate pKPDB, you may download the full data from <a href="https://www.pypka.org/pKPDB">pypka.org/pKPDB</a>.
+
+```bibtex
+@article{reis2021pKPDB,
+    author = {Reis, Pedro B. P. S. and Clevert, Djork-Arné and Machuqueiro, Miguel},
+    title = "{pKPDB: a Protein Data Bank extension database of pKa and pI theoretical values}",
+    journal = {Bioinformatics},
+    year = {2021},
+    month = {07},
+    issn = {1367-4803},
+    doi = {10.1093/bioinformatics/btab518}
+}
+```
 
 ![DB diagram](./initial/diagram.png)
 
@@ -37,6 +51,7 @@ python3 fill.py --idcode <IDCODE>
 ```
 
 Extra options:
+
 - ncpus NCPUS
 - verbose {DEBUG,INFO,WARNING}
 - nres-limit NRES_LIMIT

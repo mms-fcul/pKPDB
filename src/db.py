@@ -34,7 +34,6 @@ Base = declarative_base()
 Session = sessionmaker(db)
 session = Session()
 
-
 class Protein(Base):
     __tablename__ = "protein"
 

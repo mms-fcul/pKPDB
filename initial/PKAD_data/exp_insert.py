@@ -28,13 +28,18 @@ def insert_exp(row):
             i = None
         return i
 
+    resname = row["Res Name"]
+    if resname == "N-term":
+        resname = "NTR"
+    elif resname == "C-term":
+        resname = "CTR"
     resid = (
         session.query(Residue.resid)
         .join(Protein, Protein.pid == Residue.pid)
         .filter(Protein.idcode == row["PDB ID"].lower())
         .filter(Residue.chain == row["Chain"])
         .filter(Residue.residue_number == row["Res ID"])
-        .filter(Residue.residue_type == row["Res Name"])
+        .filter(Residue.residue_type == resname)
         .first()
     )
     if resid:
